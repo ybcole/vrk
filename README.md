@@ -1,8 +1,4 @@
-You're absolutely right - I misunderstood. Users don't need to know about the internal code structure. Let me create proper **user-facing documentation** that focuses on **how to use the bot**, not how it works internally.
-
----
-
-# VRK Automation Bot – User Guide
+# vrk Bot
 
 **Automate your Discord server with powerful condition-action rules.**
 
