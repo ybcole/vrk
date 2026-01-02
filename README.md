@@ -528,6 +528,10 @@ Import, export, and backup rule collections:
 
 ---
 
+Yes, you absolutely should update the "Examples" section. The current examples use `.add` commands which you deleted from the code, so if a user copies them, **they will fail silently.**
+
+Here is the corrected **Examples** section. It uses the new `.set` syntax with math expressions and includes the quotes around variable names to match your latest code fix.
+
 ## Examples
 
 Here are some automation examples you can use and modify.
@@ -535,115 +539,169 @@ Here are some automation examples you can use and modify.
 ### Auto-Moderation
 
 **Delete spam (repeated characters):**
-```
+
+```bash
 vrule add if message.content matches /(.)\1{10,}/ then message.delete; member.timeout 5 priority 100 tags [automod]
+
 ```
+
 Detects when someone types the same character 10+ times in a row.
 
 **Block links (except for admins):**
-```
+
+```bash
 vrule add if message.content matches /https?:\/\// and "Admin" not in member.role_names then message.delete; message.reply "No links allowed!" priority 90 tags [automod]
+
 ```
+
 Prevents non-admins from posting URLs.
 
 **Auto-ban on bad words:**
-```
+
+```bash
 vrule add if message.content matches /(badword1|badword2)/ then message.delete; member.ban priority 100 tags [automod]
+
 ```
+
 Replace `badword1|badword2` with your actual filtered words.
 
 ### Welcome System
 
 **Welcome new members:**
-```
+
+```bash
 vrule add if event_type == "member_join" then channel.send_to "123456:Welcome {member.mention} to the server!"; member.addrole "Member" priority 50 tags [welcome]
+
 ```
+
 Replace `123456` with your welcome channel ID.
 
-**Track total joins:**
+**Track total joins (Server Variable):**
+
+```bash
+vrule add if event_type == "member_join" then var.set "total_joins" {var.total_joins} + 1; channel.send "You're member #{var.total_joins}!" priority 50 tags [welcome]
+
 ```
-vrule add if event_type == "member_join" then var.add total_joins 1; channel.send "You're member #{var.total_joins}!" priority 50 tags [welcome]
-```
-Counts and announces each new member.
+
+Counts and announces each new member using a global variable.
 
 **Goodbye message:**
-```
+
+```bash
 vrule add if event_type == "member_leave" then channel.send_to 123456:"{member.name} has left the server." priority 50 tags [welcome]
+
 ```
 
 ### Leveling System
 
 **Gain XP on every message:**
+
+```bash
+vrule add if event_type == "message" and not member.bot then uvar.set "xp" {uvar.xp} + 5 priority 5 tags [leveling]
+
 ```
-vrule add if event_type == "message" and not member.bot then uvar.add xp 5 priority 5 tags [leveling]
-```
-Award 5 XP for each message (excludes bots).
+
+Award 5 XP for each message (excludes bots). Note the math syntax.
 
 **Level 10 role reward:**
-```
+
+```bash
 vrule add if uvar.xp >= 1000 and "Level 10" not in member.role_names then member.addrole "Level 10"; channel.send "🎉 {member.mention} reached Level 10!" priority 20 tags [leveling]
+
 ```
+
 Automatically gives role when user hits 1000 XP.
 
 **Check rank command:**
-```
+
+```bash
 vrule add if message.content == "!rank" then message.reply "You have {uvar.xp} XP!" priority 10 tags [leveling]
+
 ```
 
 ### Custom Commands
 
 **Dice roll:**
-```
-vrule add if message.content == "!roll" then temp.set dice {random.1-6}; message.reply "🎲 You rolled a {temp.dice}!" priority 10 tags [fun]
+
+```bash
+vrule add if message.content == "!roll" then temp.set "dice" {random.1-6}; message.reply "🎲 You rolled a {temp.dice}!" priority 10 tags [fun]
+
 ```
 
 **Coin flip:**
-```
-vrule add if message.content == "!flip" then temp.set coin {random.0-1}; message.reply "{temp.coin} == 0 ? Heads : Tails" priority 10 tags [fun]
+
+```bash
+vrule add if message.content == "!flip" then temp.set "coin" {random.0-1}; message.reply "{temp.coin} == 0 ? Heads : Tails" priority 10 tags [fun]
+
 ```
 
 **Server stats:**
-```
+
+```bash
 vrule add if message.content == "!stats" then channel.send "📊 Server: {guild.name}\n👥 Members: {guild.member_count}" priority 10 tags [info]
+
 ```
 
 ### Reaction Roles
 
 **Give role when reacting with ✅:**
-```
+
+```bash
 vrule add if event_type == "reaction_add" and emoji == "✅" then member.addrole "Verified" priority 30 tags [roles]
+
 ```
+
 User gets "Verified" role when they react with ✅.
 
 **Remove role when unreacting:**
-```
+
+```bash
 vrule add if event_type == "reaction_remove" and emoji == "✅" then member.removerole "Verified" priority 30 tags [roles]
+
 ```
 
 ### Scheduled Messages
 
 **Morning announcement at 9 AM:**
-```
+
+```bash
 vrule add if time.hour == 9 and time.minute == 0 then channel.send "☀️ Good morning everyone!" priority 1 tags [scheduled]
+
 ```
 
 **Only on weekends:**
-```
+
+```bash
 vrule add if (time.dayofweek == "Saturday" or time.dayofweek == "Sunday") and time.hour == 12 then channel.send "Happy weekend!" priority 1 tags [scheduled]
+
 ```
 
 ### Advanced: Warnings System
 
 **Track warnings:**
+
+```bash
+vrule add if message.content matches /badword/ then message.delete; uvar.set "warnings" {uvar.warnings} + 1; member.dm "Warning {uvar.warnings}/3" priority 100 tags [moderation]
+
 ```
-vrule add if message.content matches /badword/ then message.delete; uvar.add warnings 1; member.dm "Warning {uvar.warnings}/3" priority 100 tags [moderation]
-```
+
 Each violation increases user's warning count.
 
 **Auto-ban at 3 warnings:**
-```
+
+```bash
 vrule add if uvar.warnings >= 3 then member.ban; channel.send "{member.name} was banned for repeated violations" priority 100 tags [moderation]
+
 ```
+
+**Reset User (Unban):**
+
+```bash
+vrule add if event_type == "member_unban" then uvar.del "warnings" priority 10 tags [moderation]
+
+```
+
+Clears the warning history when a user is unbanned.
 
 ---
 
