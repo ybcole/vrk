@@ -408,7 +408,7 @@ channel.send "Welcome {member.name}! We now have {guild.member_count} members."
 
 ## Modules
 
-Modules are packages of rules that can be exported and imported. They let you share automation setups with others or move rules between servers.
+Modules are packages of rules that can be exported and imported. They let you share automation setups with others or move rules between servers. They allow you ti share automation templates with other servers, backup specific rule sets, and istribute pre-made automation packages.
 
 ### What are Modules?
 
@@ -416,11 +416,6 @@ A module is a JSON file containing:
 - Multiple rules grouped by a tag
 - Metadata (name, version, author)
 - Optional variables
-
-**Benefits:**
-- Share automation templates with other servers
-- Backup specific rule sets
-- Distribute pre-made automation packages
 
 ### Exporting a Module
 
