@@ -786,14 +786,14 @@ All commands that modify rules or variables require **Administrator permission**
 
 Manage your automation rules.
 
-| Command | Permission | What it does | 
-|---------|------------|--------------|
-| vrule add if ... then ... | Admin | Create a new automation rule |
-| vrule <id> | Anyone | View full details of a specific rule |
-| vrule del <id> | Admin | Delete a rule permanently |
-| vrule toggle <id> | Admin | Enable or disable a rule without deleting |
-| vrule clear | Admin | Delete ALL rules in the server |
-| vruledex [page] | Anyone | List all rules with pagination (10 per page) |
+| Command | What it does | 
+|---------|--------------|
+| vrule add if ... then ... | Create a new automation rule |
+| vrule <id> | View full details of a specific rule |
+| vrule del <id> | Delete a rule permanently |
+| vrule toggle <id> | Enable or disable a rule without deleting |
+| vrule clear | Delete ALL rules in the server |
+| vruledex [page] | List all rules with pagination (10 per page) |
 
 **Examples:**
 ```
@@ -810,15 +810,15 @@ vruledex 2                 (Show page 2)
 
 Manage server-wide variables directly.
 
-| Command | Permission | What it does | 
-|---------|------------|--------------|
-| vvar set <name> <value> | Admin | Create or update a server variable |
-| vvar get <name> | Anyone | Retrieve variable value (or download as JSON if large) |
-| vvar del <name> | Admin | Delete a server variable |
-| vvar clear | Admin | Delete ALL server variables |
-| vvardex [page] | Anyone | List all variables with pagination |
-| vuvardex | Anyone | View your own user variables |
-| vuvardex @User | Anyone | View another user's variables |
+| Command | What it does |  
+|---------|--------------|
+| vvar set <name> <value> | Create or update a server variable |
+| vvar get <name> | Retrieve variable value (or download as JSON if large) |
+| vvar del <name> | Delete a server variable |
+| vvar clear | Delete ALL server variables |
+| vvardex [page] | List all variables with pagination |
+| vuvardex | View your own user variables |
+| vuvardex @User | View another user's variables |
 
 **Examples:**
 ```
@@ -838,12 +838,12 @@ vuvardex @JohnDoe
 
 Import, export, and backup rule collections.
 
-| Command | Permission | What it does | 
-|---------|------------|--------------|
-| vmodule import | Admin | Install module from attached JSON file | 
-| vmodule export <tag> | Admin | Create module containing all rules with tag |
-| vmodule backup | Admin | Create full backup of all server rules |
-| vmodule restore | Admin | Restore rules from backup file |
+| Command | What it does | 
+|---------|--------------|
+| vmodule import | Install module from attached JSON file | 
+| vmodule export <tag> | Create module containing all rules with tag |
+| vmodule backup | Create full backup of all server rules |
+| vmodule restore | Restore rules from backup file |
 
 **Examples:**
 ```
