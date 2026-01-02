@@ -202,6 +202,8 @@ Control how and where the bot sends messages:
 |--------|---------|--------------|
 | channel.send | channel.send "Hello everyone!" | Send message to current channel |
 | channel.send_to | channel.send_to "123456:Alert!" | Send message to specific channel by ID |
+| channel.send_embed | channel.send_embed "{'title': 'Alert', 'description': 'Something happened!', 'color': 0xFF0000}" | Send embed to current channel |
+| channel.send_embed_to | channel.send_embed_to "12345:{'title': 'Alert', 'description': 'Something happened!', 'color': 0xFF0000}" | Send message to specific channel by ID |
 | message.reply | message.reply "Got it!" | Reply directly to the user's message |
 | message.delete | message.delete | Delete the message that triggered the rule |
 
@@ -218,7 +220,8 @@ Moderate and manage server members:
 | member.addrole | member.addrole "Member" | Give user a role by name |
 | member.removerole | member.removerole "Trial" | Remove a role from user |
 | member.kick | member.kick | Remove user from server temporarily |
-| member.ban | member.ban | Permanently ban user from server |
+| member.ban | member.ban 123456789 | Permanently ban user from server |
+| member.ban | member.ban 123456789 | Unbans the user from server |
 | member.dm | member.dm "Warning: Stop spamming" | Send private message to user |
 
 
@@ -498,7 +501,7 @@ Replace `badword1|badword2` with your actual filtered words.
 
 **Welcome new members:**
 ```
-vrule add if event_type == "member_join" then channel.send_to 123456:"Welcome {member.mention} to the server!"; member.addrole "Member" priority 50 tags [welcome]
+vrule add if event_type == "member_join" then channel.send_to "123456:Welcome {member.mention} to the server!"; member.addrole "Member" priority 50 tags [welcome]
 ```
 Replace `123456` with your welcome channel ID.
 
@@ -630,14 +633,4 @@ A: Yes! Example: `if var.points + 10 > 100 then ...`
 
 ---
 
-## Need Help?
-
-- Run `vhelp` for the interactive help menu
-- Check your rule with `vrule <id>` to see exact syntax
-- List all rules with `vruledex` to find IDs
-- Test conditions one at a time to isolate issues
-- Always make backups with `vmodule backup` before major changes
-
----
-
-**Happy Automating! 🚀**
+vrk
