@@ -1,4 +1,4 @@
-# vrk User Guide
+# About
 
 vrk is Discord bot with a programmable automation engine that lets you create complex logic rules with conditions, multiple actions, and persistent variables to automate your server. It can reference all objects including members, channels, messages, roles, and guild properties to create sophisticated automation workflows.
 
