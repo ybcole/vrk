@@ -185,7 +185,7 @@ Reference stored data.
 
 ## Events
 
-Events are discrete actions or changes that occur within a Discord server. They represent specific triggers that your bot can respond to. Each event provides contextual information about the objects involved. Use the `event_type` variable in your conditions to target specific triggers.
+Events are discrete actions or changes that occur within a Discord server. They represent specific triggers that the bot can respond to. Each event provides contextual information about the objects involved. Use the `event_type` variable in your conditions to target specific triggers.
 
 ### Message Events
 
@@ -243,7 +243,7 @@ Covers changes to channels or server settings. Context includes channel or serve
 
 ## Actions
 
-Actions are what your bot does when a rule triggers. You can send messages, modify users, manage channels, and more.
+Actions are what the bot does when a rule triggers. You can send messages, modify users, manage channels, and more.
 
 ### Messaging
 
@@ -429,7 +429,7 @@ vrule add if ... then ... tags [welcome]
 vmodule export welcome
 ```
 
-3. Bot sends you a `module_welcome.json` file
+3. The bot sends you a `module_welcome.json` file
 
 **What gets exported:** All rules tagged with the specified tag, metadata, and structure.
 
@@ -514,19 +514,11 @@ Import, export, and backup rule collections:
 | vmodule backup | Create full backup of all server rules |
 | vmodule restore | Restore rules from backup file |
 
-### Help
-
-Get interactive help within Discord:
-
-| Command | What it does |
-|---------|--------------|
-| vhelp | Shows interactive dropdown menu with categorized help |
-
 ---
 
 ## Examples
 
-Real-world automation examples you can use and modify.
+Here are some automation examples you can use and modify.
 
 ### Auto-Moderation
 
