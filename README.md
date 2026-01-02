@@ -348,7 +348,6 @@ vvar set "welcome_count" 0
 vvar set "server_motto" "Be nice!"
 vvar get "welcome_count"
 vvar del "welcome_count"
-
 ```
 
 **Using in rules:**
@@ -356,7 +355,6 @@ To add to a counter, use `.set` with `{}` to get the current value first.
 
 ```
 vrule add if event_type == "member_join" then var.set "welcome_count" {var.welcome_count} + 1; channel.send "Welcome! You're member #{var.welcome_count}!" priority 10 tags []
-
 ```
 
 ### User Variables (uvar)
