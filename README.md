@@ -70,9 +70,7 @@ vrule add if <condition> then <action> priority <number> tags [tag1, tag2]
 | priority | No | Execution order - higher runs first (default: 0) |
 | tags | No | Labels for organizing and exporting rules |
 
-**Priority Example:** A rule with priority 100 will run before a rule with priority 10.
-
-**Tags Example:** Use tags like [moderation], [welcome], [leveling] to group related rules for export.
+A rule with priority 100 will run before a rule with priority 10. You may also use tags like [moderation], [welcome], [leveling] to group related rules for export.
 
 ---
 
