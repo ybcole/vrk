@@ -53,12 +53,12 @@ vrule add if <condition> then <action> priority <number> tags [tag1, tag2]
 
 | Part | Required? | What it does |
 |------|-----------|--------------|
-| `if` | ✅ Yes | Starts the condition |
-| `<condition>` | ✅ Yes | When to trigger |
-| `then` | ✅ Yes | Separates condition from actions |
-| `<action>` | ✅ Yes | What to do |
-| `priority` | ❌ No | Higher = runs first (default: 0) |
-| `tags` | ❌ No | Labels for organizing |
+| `if` | Yes | Starts the condition |
+| `<condition>` | Yes | When to trigger |
+| `then` | Yes | Separates condition from actions |
+| `<action>` | Yes | What to do |
+| `priority` | No | Higher = runs first (default: 0) |
+| `tags` | No | Labels for organizing |
 
 ### Multiple Actions
 
