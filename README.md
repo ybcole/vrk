@@ -298,19 +298,23 @@ Modify channel settings and structure:
 | channel.create | channel.create "new-channel" | Create new text channel |
 | channel.delete | channel.delete | Delete the current channel |
 
-### Variables
+### Variables & Math
 
-Store and manipulate persistent data:
+Store data and perform calculations. **Note:** To do math, use `{}` to retrieve the current value.
 
 | Action | Example | What it does |
 |--------|---------|--------------|
-| var.set | var.set counter 0 | Create or update server variable |
-| var.add | var.add points 10 | Increase variable by amount |
-| var.del | var.del temp | Delete server variable |
-| uvar.set | uvar.set xp 100 | Create or update user-specific variable |
-| uvar.add | uvar.add coins 50 | Increase user variable by amount |
-| uvar.sub | uvar.sub health 10 | Decrease user variable by amount |
-| temp.set | temp.set result 42 | Set temporary variable (cleared after rule) |
+| var.set | `var.set "counter" 0` | Set a global variable |
+| var.del | `var.del "counter"` | Delete a global variable |
+| uvar.set | `uvar.set "xp" 100` | Set a user variable |
+| uvar.del | `uvar.del "xp"` | Delete a specific user variable |
+| uvar.clear | `uvar.clear` | **Hard Reset:** Wipes ALL data for that user |
+| temp.set | `temp.set "roll" {random.1-6}` | Set temporary variable |
+
+**Math Examples:**
+* **Add:** `uvar.set "coins" {uvar.coins} + 10`
+* **Subtract:** `uvar.set "hp" {uvar.hp} - 5`
+* **Multiply:** `uvar.set "bonus" {uvar.points} * 1.5`
 
 **Variables can store:** String, numbers, lists, and JSON objects
 
@@ -333,30 +337,38 @@ Variables let you store persistent data that your rules can read and modify. The
 
 Server variables are shared across your entire Discord server. Anyone can trigger rules that use them, and they persist forever unless deleted.
 
-**Available to:** Everyone in the server  
-**Saved:** Permanently in database  
-**Use case:** Server-wide counters, settings, shared data
+* **Available to:** Everyone in the server  
+* **Saved:** Permanently in database  
+* **Use case:** Server-wide counters, settings, shared data  
 
-**Managing via commands:**
+**Managing via commands:**  
+
 ```
-vvar set welcome_count 0
-vvar set server_motto "Be nice!"
-vvar get welcome_count
-vvar del welcome_count
+vvar set "welcome_count" 0
+vvar set "server_motto" "Be nice!"
+vvar get "welcome_count"
+vvar del "welcome_count"
+
 ```
 
 **Using in rules:**
+To add to a counter, use `.set` with `{}` to get the current value first.
+
 ```
-vrule add if event_type == "member_join" then var.add welcome_count 1; channel.send "Welcome! You're member #{var.welcome_count}!" priority 10 tags []
+vrule add if event_type == "member_join" then var.set "welcome_count" {var.welcome_count} + 1; channel.send "Welcome! You're member #{var.welcome_count}!" priority 10 tags []
+
 ```
 
 ### User Variables (uvar)
 
 User variables are unique to each user. Every user has their own separate copy of each uvar, making them perfect for tracking individual stats.
 
-**Available to:** Specific user only  
-**Saved:** Per-user, per-server  
-**Use case:** XP systems, currency, personal stats, achievements
+* **Available to:** Specific user only   
+* **Saved:** Per-user, per-server   
+* **Use case:** XP systems, currency, personal stats, achievements  
+
+**Managing via commands:**
+vuvardex (View your own variables) vuvardex @User (View another user's variables) vvar clearusers (Admin only: Delete ALL user data)
 
 **Example:**
 ```
@@ -369,9 +381,9 @@ Each user has their own `uvar.coins`, `uvar.xp`, etc. User A's coins don't affec
 
 Temporary variables only exist while a rule is executing. They're perfect for storing intermediate calculations or random values.
 
-**Available to:** Current rule execution only  
-**Saved:** Deleted after rule finishes  
-**Use case:** Random rolls, calculations, temporary storage
+* **Available to:** Current rule execution only  
+* **Saved:** Deleted after rule finishes  
+* **Use case:** Random rolls, calculations, temporary storage  
 
 **Example:**
 ```
