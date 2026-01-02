@@ -10,11 +10,12 @@ vrk is Discord bot with a programmable automation engine that lets you create co
 2. [Creating Rules](#creating-rules)
 3. [Conditions](#conditions)
 4. [Placeholders](#placeholders)
-5. [Actions](#actions)
-6. [Variables](#variables)
-7. [Modules](#modules)
-8. [Commands](#commands)
-9. [Examples](#examples)
+5. [Events](#events)
+6. [Actions](#actions)
+7. [Variables](#variables)
+8. [Modules](#modules)
+9. [Commands](#commands)
+10. [Examples](#examples)
 
 ---
 
@@ -680,9 +681,6 @@ A: Yes! Server variables (var) and user variables (uvar) are saved to the databa
 
 **Q: Can I use math in conditions?**  
 A: Yes! Example: `if var.points + 10 > 100 then ...`
-
----
-Here is the formatted **References** section to place at the very bottom of your User Guide. I have added the actual hyperlinks so users can click them directly.
 
 ---
 
