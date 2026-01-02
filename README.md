@@ -1,27 +1,28 @@
-# vrk Bot
+# vrk User Guide
 
-**Automate your Discord server with powerful condition-action rules.**
-
----
-
-## ≡ Table of Contents
-
-1. [Getting Started](#-getting-started)
-2. [Creating Rules](#-creating-rules)
-3. [Conditions](#-conditions)
-4. [Actions](#-actions)
-5. [Variables](#-variables)
-6. [Modules](#-modules)
-7. [Commands](#-commands)
-8. [Examples](#-examples)
+vrk is Discord bot with a programmable automation engine that lets you create complex logic rules with conditions, multiple actions, and persistent variables to automate your server. It can reference all objects including members, channels, messages, roles, and guild properties to create sophisticated automation workflows.
 
 ---
 
-## 🚀 Getting Started
+## Table of Contents
 
-### What is VRK Automation?
+1. [Getting Started](#getting-started)
+2. [Creating Rules](#creating-rules)
+3. [Conditions](#conditions)
+4. [Placeholders](#placeholders)
+5. [Actions](#actions)
+6. [Variables](#variables)
+7. [Modules](#modules)
+8. [Commands](#commands)
+9. [Examples](#examples)
 
-VRK is a Discord bot that lets you create **custom automation rules** using simple if-then logic:
+---
+
+## Getting Started
+
+### What is vrk?
+
+vrk is a rule engine that lets you create custom automation rules using conditional logic. Rules follow an if-then structure where you define conditions that trigger specific actions.
 
 ```
 if <something happens> then <do something>
@@ -34,14 +35,26 @@ vrule add if message.content == "ping" then message.reply "pong!" priority 10 ta
 ```
 
 **What this does:**
-- When someone types "ping"
-- The bot replies "pong!"
+- When someone types "ping" in any channel
+- The bot automatically replies "pong!"
+
+### Multiple Actions
+
+You can chain multiple actions together by separating them with semicolons (`;`). This lets you create powerful automation sequences:
+
+```
+vrule add if member.name == "spammer" then message.delete; member.timeout 60 priority 100 tags [moderation]
+```
+
+This rule deletes the message AND times out the user for 60 minutes.
 
 ---
 
-## 📐 Creating Rules
+## Creating Rules
 
 ### Basic Syntax
+
+Every rule follows this structure:
 
 ```
 vrule add if <condition> then <action> priority <number> tags [tag1, tag2]
@@ -49,155 +62,228 @@ vrule add if <condition> then <action> priority <number> tags [tag1, tag2]
 
 | Part | Required? | What it does |
 |------|-----------|--------------|
-| `if` | Yes | Starts the condition |
-| `<condition>` | Yes | When to trigger |
-| `then` | Yes | Separates condition from actions |
-| `<action>` | Yes | What to do |
-| `priority` | No | Higher = runs first (default: 0) |
-| `tags` | No | Labels for organizing |
+| if | Yes | Starts the condition block |
+| condition | Yes | Logic that determines when to trigger |
+| then | Yes | Separates condition from actions |
+| action | Yes | What the bot should do |
+| priority | No | Execution order - higher runs first (default: 0) |
+| tags | No | Labels for organizing and exporting rules |
 
-### Multiple Actions
+**Priority Example:** A rule with priority 100 will run before a rule with priority 10.
 
-Separate actions with semicolons (`;`):
-
-```
-vrule add if member.name == "spammer" then message.delete; member.timeout 60 priority 100 tags [moderation]
-```
+**Tags Example:** Use tags like [moderation], [welcome], [leveling] to group related rules for export.
 
 ---
 
-## ⚖️ Conditions
+## Conditions
+
+Conditions determine when your rule should trigger. You can check user properties, message content, time, events, and more.
 
 ### Comparison Operators
 
+These operators let you compare values:
+
 | Operator | Example | Explanation |
 |----------|---------|-------------|
-| `==` | `message.content == "hello"` | Exact match |
-| `!=` | `channel.name != "general"` | Not equal |
-| `>` | `guild.member_count > 100` | Greater than |
-| `<` | `time.hour < 12` | Less than |
-| `>=` | `uvar.level >= 10` | Greater or equal |
-| `<=` | `var.warnings <= 3` | Less or equal |
+| == | message.content == "hello" | Exact match (case-sensitive) |
+| != | channel.name != "general" | Not equal to |
+| > | guild.member_count > 100 | Greater than (numbers only) |
+| < | time.hour < 12 | Less than (numbers only) |
+| >= | uvar.level >= 10 | Greater than or equal to |
+| <= | var.warnings <= 3 | Less than or equal to |
 
 ### String Checks
 
+Special operators for working with text:
+
 | Operator | Example | Explanation |
 |----------|---------|-------------|
-| `startswith` | `message.content startswith "!"` | Begins with |
-| `endswith` | `member.name endswith "_bot"` | Ends with |
-| `in` | `"Moderator" in member.role_names` | Contains |
-| `matches` | `message.content matches /https?:\/\//` | Regex pattern |
+| startswith | message.content startswith "!" | Text begins with specific characters |
+| endswith | member.name endswith "_bot" | Text ends with specific characters |
+| in | "Moderator" in member.role_names | Check if item exists in a list |
+| matches | message.content matches /https?:\/\// | Regex pattern matching |
+
+**Regex Example:** The pattern `/https?:\/\//` matches URLs starting with http:// or https://
 
 ### Combining Conditions
 
+Create complex logic by combining multiple conditions:
+
 | Operator | Example | Explanation |
 |----------|---------|-------------|
-| `and` | `time.hour > 9 and time.hour < 17` | Both must be true |
-| `or` | `message.content == "hi" or message.content == "hello"` | Either can be true |
-| `not` | `not member.bot` | Reverses the result |
-| `( )` | `(A and B) or C` | Group conditions |
+| and | time.hour > 9 and time.hour < 17 | Both conditions must be true |
+| or | message.content == "hi" or message.content == "hello" | At least one condition must be true |
+| not | not member.bot | Reverses the result (true becomes false) |
+| ( ) | (A and B) or C | Groups conditions for order of operations |
 
-### What You Can Check
-
-#### User Info
-- `member.name` - Username (e.g., "JohnDoe")
-- `member.id` - User ID number
-- `member.bot` - Is this a bot? (true/false)
-- `member.role_names` - List of roles they have
-
-#### Message Info
-- `message.content` - What they typed
-- `message.length` - How many characters
-
-#### Server Info
-- `guild.name` - Server name
-- `guild.member_count` - Total members
-- `channel.name` - Channel name
-
-#### Time Info
-- `time.hour` - Current hour (0-23)
-- `time.minute` - Current minute (0-59)
-- `time.dayofweek` - Day name (Monday, Tuesday, etc.)
-
-#### Event Info
-- `event_type` - What happened (message, member_join, etc.)
-
-#### Variables
-- `var.name` - Server variable
-- `uvar.name` - User variable
-- `temp.name` - Temporary variable (only in current rule)
+**Logic Example:**
+```
+if (time.hour >= 9 and time.hour < 17) and not member.bot then channel.send "Office hours!"
+```
 
 ---
 
-## 🛠 Actions
+## Placeholders
 
-### Messaging
+Placeholders are dynamic variables that represent the event. These keywords let you access the context of the data.
 
-| Action | Example | What it does |
-|--------|---------|--------------|
-| `channel.send` | `channel.send "Hello everyone!"` | Send message in current channel |
-| `channel.send_to` | `channel.send_to 123456:"Alert!"` | Send to specific channel ID |
-| `message.reply` | `message.reply "Got it!"` | Reply to the user |
-| `message.delete` | `message.delete` | Delete the message |
+### User Info
 
-### Member Actions
+Access information about the user who triggered the event.
 
-| Action | Example | What it does |
-|--------|---------|--------------|
-| `member.timeout` | `member.timeout 60` | Timeout for X minutes |
-| `member.nickname` | `member.nickname "NewName"` | Change their nickname |
-| `member.addrole` | `member.addrole "Member"` | Give them a role |
-| `member.removerole` | `member.removerole "Trial"` | Take away a role |
-| `member.kick` | `member.kick` | Kick from server |
-| `member.ban` | `member.ban` | Ban from server |
-| `member.dm` | `member.dm "Warning: Stop spamming"` | Send private message |
+| Variable | Description |
+| --- | --- |
+| member.name | Username (e.g., "Cole") |
+| member.id | Unique user ID number |
+| member.bot | Returns `true` if user is a bot, `false` if user |
+| member.role_names | List of all role names the user has |
 
-### Reactions
 
-| Action | Example | What it does |
-|--------|---------|--------------|
-| `reaction.add` | `reaction.add "✅"` | React with emoji |
-| `reaction.remove` | `reaction.remove "❌"` | Remove all of that emoji |
+### Message Info
 
-### Channel Management
+Access properties of the message that triggered the rule.
 
-| Action | Example | What it does |
-|--------|---------|--------------|
-| `channel.setname` | `channel.setname "new-name"` | Rename channel |
-| `channel.settopic` | `channel.settopic "Chat here"` | Change description |
-| `channel.setslowmode` | `channel.setslowmode 5` | Set slowmode (seconds) |
-| `channel.purge` | `channel.purge 10` | Delete last X messages |
-| `channel.create` | `channel.create "new-channel"` | Create text channel |
-| `channel.delete` | `channel.delete` | Delete current channel |
+| Variable | Description |
+| --- | --- |
+| message.content | The full text of the message |
+| message.length | Number of characters in the message |
+
+
+### Server Info
+
+Check properties of your server.
+
+| Variable | Description |
+| --- | --- |
+| guild.name | Server name |
+| guild.member_count | Total number of members |
+| channel.name | Name of the current channel |
+
+### Time Info
+
+Schedule rules based on current time.
+
+| Variable | Description |
+| --- | --- |
+| time.hour | Current hour in 24-hour format (0-23) |
+| time.minute | Current minute (0-59) |
+| time.dayofweek | Day name (Monday, Tuesday, etc.) |
+
+### Event Info
+
+Determine what type of event triggered the rule.
+
+| Variable | Description |
+| --- | --- |
+| event_type | Event name (`message`, `member_join`, `reaction_add`, etc.) |
 
 ### Variables
 
-| Action | Example | What it does |
-|--------|---------|--------------|
-| `var.set` | `var.set counter 0` | Set server variable |
-| `var.add` | `var.add points 10` | Increase by amount |
-| `var.del` | `var.del temp` | Delete variable |
-| `uvar.set` | `uvar.set xp 100` | Set user variable |
-| `uvar.add` | `uvar.add coins 50` | Increase user variable |
-| `uvar.sub` | `uvar.sub health 10` | Decrease user variable |
-| `temp.set` | `temp.set result 42` | Set temporary variable |
+Reference stored data.
 
-### Other
+| Variable | Scope | Description |
+| --- | --- | --- |
+| var.name | Global | Server-wide variable (accessible to everyone) |
+| uvar.name | User | User-specific variable (unique per user) |
+| temp.name | Local | Temporary variable (exists only during rule execution) |
 
-| Action | Example | What it does |
-|--------|---------|--------------|
-| `system.wait` | `system.wait 2` | Wait X seconds before next action |
-| `message.pin` | `message.pin` | Pin the message |
 
 ---
 
-## 📊 Variables
+## Actions
+
+Actions are what your bot does when a rule triggers. You can send messages, modify users, manage channels, and more.
+
+### Messaging
+
+Control how and where the bot sends messages:
+
+| Action | Example | What it does |
+|--------|---------|--------------|
+| channel.send | channel.send "Hello everyone!" | Send message to current channel |
+| channel.send_to | channel.send_to "123456:Alert!" | Send message to specific channel by ID |
+| message.reply | message.reply "Got it!" | Reply directly to the user's message |
+| message.delete | message.delete | Delete the message that triggered the rule |
+
+**Note:** To get a channel ID, enable Developer Mode in Discord, right-click a channel, and select "Copy ID"
+
+### Member Actions
+
+Moderate and manage server members:
+
+| Action | Example | What it does |
+|--------|---------|--------------|
+| member.timeout | member.timeout 60 | Timeout user for X minutes (mutes them) |
+| member.nickname | member.nickname "Cole" | Change user's server nickname |
+| member.addrole | member.addrole "Member" | Give user a role by name |
+| member.removerole | member.removerole "Trial" | Remove a role from user |
+| member.kick | member.kick | Remove user from server temporarily |
+| member.ban | member.ban | Permanently ban user from server |
+| member.dm | member.dm "Warning: Stop spamming" | Send private message to user |
+
+
+### Reactions
+
+Add or remove emoji reactions:
+
+| Action | Example | What it does |
+|--------|---------|--------------|
+| reaction.add | reaction.add "👀" | Add emoji reaction to message |
+| reaction.remove | reaction.remove "👎🏼" | Remove all instances of emoji from message |
+
+### Channel Management
+
+Modify channel settings and structure:
+
+| Action | Example | What it does |
+|--------|---------|--------------|
+| channel.setname | channel.setname "new-name" | Rename the current channel |
+| channel.settopic | channel.settopic "Chat here" | Change channel description/topic |
+| channel.setslowmode | channel.setslowmode 5 | Set slowmode delay in seconds |
+| channel.purge | channel.purge 10 | Bulk delete last X messages |
+| channel.create | channel.create "new-channel" | Create new text channel |
+| channel.delete | channel.delete | Delete the current channel |
+
+### Variables
+
+Store and manipulate persistent data:
+
+| Action | Example | What it does |
+|--------|---------|--------------|
+| var.set | var.set counter 0 | Create or update server variable |
+| var.add | var.add points 10 | Increase variable by amount |
+| var.del | var.del temp | Delete server variable |
+| uvar.set | uvar.set xp 100 | Create or update user-specific variable |
+| uvar.add | uvar.add coins 50 | Increase user variable by amount |
+| uvar.sub | uvar.sub health 10 | Decrease user variable by amount |
+| temp.set | temp.set result 42 | Set temporary variable (cleared after rule) |
+
+**Variables can store:** String, numbers, lists, and JSON objects
+
+### Other
+
+Additional utility actions:
+
+| Action | Example | What it does |
+|--------|---------|--------------|
+| system.wait | system.wait 2 | Pause for X seconds before next action |
+| message.pin | message.pin | Pin message to channel |
+
+---
+
+## Variables
+
+Variables let you store persistent data that your rules can read and modify. There are three types of variables, each with different scopes and lifespans.
 
 ### Server Variables (var)
 
-**Available to:** Everyone in the server  
-**Saved:** Forever (until deleted)
+Server variables are shared across your entire Discord server. Anyone can trigger rules that use them, and they persist forever unless deleted.
 
+**Available to:** Everyone in the server  
+**Saved:** Permanently in database  
+**Use case:** Server-wide counters, settings, shared data
+
+**Managing via commands:**
 ```
 vvar set welcome_count 0
 vvar set server_motto "Be nice!"
@@ -205,55 +291,78 @@ vvar get welcome_count
 vvar del welcome_count
 ```
 
-Use in rules:
+**Using in rules:**
 ```
 vrule add if event_type == "member_join" then var.add welcome_count 1; channel.send "Welcome! You're member #{var.welcome_count}!" priority 10 tags []
 ```
 
 ### User Variables (uvar)
 
-**Available to:** Specific user  
-**Saved:** Per-user, per-server
+User variables are unique to each user. Every user has their own separate copy of each uvar, making them perfect for tracking individual stats.
 
+**Available to:** Specific user only  
+**Saved:** Per-user, per-server  
+**Use case:** XP systems, currency, personal stats, achievements
+
+**Example:**
 ```
 vrule add if message.content startswith "!work" then uvar.add coins 10; message.reply "You earned 10 coins! Total: {uvar.coins}" priority 10 tags [economy]
 ```
 
-Each user has their own `uvar.coins`, `uvar.xp`, etc.
+Each user has their own `uvar.coins`, `uvar.xp`, etc. User A's coins don't affect User B's coins.
 
 ### Temporary Variables (temp)
 
-**Available to:** Only during the current rule execution  
-**Saved:** Deleted after rule finishes
+Temporary variables only exist while a rule is executing. They're perfect for storing intermediate calculations or random values.
 
+**Available to:** Current rule execution only  
+**Saved:** Deleted after rule finishes  
+**Use case:** Random rolls, calculations, temporary storage
+
+**Example:**
 ```
 vrule add if message.content == "!roll" then temp.set dice {random.1-6}; message.reply "You rolled: {temp.dice}" priority 10 tags [fun]
 ```
 
 ### Using Variables in Text
 
-Put variable names in `{curly braces}`:
+You can insert variable values into messages using curly braces `{variable}`:
 
 ```
 channel.send "Welcome {member.name}! We now have {guild.member_count} members."
 ```
 
-Special variables:
-- `{member.mention}` - @mentions the user
-- `{channel.mention}` - #mentions the channel
-- `{random.1-100}` - Random number between 1-100
+**Special dynamic variables:**
+- `{member.mention}` - Creates @mention for the user
+- `{channel.mention}` - Creates #mention for the channel
+- `{random.1-100}` - Generates random number between 1-100
 - `{time.hour}` - Current hour
-- `{var.name}` - Your custom variable
+- `{var.name}` - Your custom server variable
+- `{uvar.name}` - User's variable value
 
 ---
 
-## 📦 Modules
+## Modules
+
+Modules are packages of rules that can be exported and imported. They let you share automation setups with others or move rules between servers.
 
 ### What are Modules?
 
-Modules let you **export and import** groups of rules to share with others or move between servers.
+A module is a JSON file containing:
+- Multiple rules grouped by a tag
+- Metadata (name, version, author)
+- Optional variables
+
+**Benefits:**
+- Share automation templates with other servers
+- Backup specific rule sets
+- Distribute pre-made automation packages
 
 ### Exporting a Module
+
+Export creates a portable file containing all rules with a specific tag.
+
+**Steps:**
 
 1. Add tags to your rules:
 ```
@@ -268,91 +377,122 @@ vmodule export welcome
 
 3. Bot sends you a `module_welcome.json` file
 
+**What gets exported:** All rules tagged with the specified tag, metadata, and structure.
+
 ### Importing a Module
 
-1. Get a module file (from someone else or your export)
-2. Run:
+Import installs rules from a module file into your server.
+
+**Steps:**
+
+1. Get a module file (from someone else or your own export)
+2. Run the import command:
 ```
 vmodule import
 ```
-3. Attach the JSON file
+3. Attach the JSON file to your message
 4. Rules are installed with new IDs (won't conflict with existing rules)
 
+**Safety:** The bot validates all imports to prevent malicious code.
+
 ### Backup & Restore
+
+Create full backups of ALL your server's rules, not just tagged ones.
 
 **Backup everything:**
 ```
 vmodule backup
 ```
-Downloads ALL your server's rules.
+Downloads a complete snapshot of ALL rules in your server.
 
 **Restore from backup:**
 ```
 vmodule restore
 ```
-Attach the backup file. All rules are re-imported.
+Attach the backup file. All rules are re-imported with new IDs.
+
+**Important:** Always backup before using `vrule clear` or making major changes!
 
 ---
 
-## ⌨️ Commands
+## Commands
+
+All commands that modify rules or variables require Administrator permission.
 
 ### Rule Commands
 
-| Command | What it does | Permission |
-|---------|--------------|------------|
-| `vrule add if ... then ...` | Create a new rule | Admin |
-| `vrule <id>` | View a rule's details | Anyone |
-| `vrule del <id>` | Delete a rule | Admin |
-| `vrule toggle <id>` | Enable/disable a rule | Admin |
-| `vrule clear` | Delete ALL rules | Admin |
-| `vruledex` | List all rules (10 per page) | Anyone |
-| `vruledex 2` | Show page 2 of rules | Anyone |
+Manage your automation rules:
+
+| Command | What it does | 
+|---------|--------------|
+| vrule add if ... then ... | Create a new automation rule |
+| vrule &lt;id&gt; | View full details of a specific rule |
+| vrule del &lt;id&gt; | Delete a rule permanently |
+| vrule toggle &lt;id&gt; | Enable or disable a rule without deleting |
+| vrule clear | Delete ALL rules in the server |
+| vruledex | List all rules with pagination (10 per page) |
+| vruledex 2 | Show page 2 of rules |
+
+**Note:** Rule IDs are assigned automatically and shown in `vruledex`.
 
 ### Variable Commands
 
-| Command | What it does | Permission |
-|---------|--------------|------------|
-| `vvar set <name> <value>` | Create/update variable | Admin |
-| `vvar get <name>` | See variable value | Admin |
-| `vvar del <name>` | Delete variable | Admin |
-| `vvar clear` | Delete ALL variables | Admin |
-| `vvardex` | List all variables | Admin |
+Manage server-wide variables directly:
+
+| Command | What it does | 
+|---------|--------------|
+| vvar set &lt;name&gt; &lt;value&gt; | Create or update a server variable |
+| vvar get &lt;name&gt; | Retrieve variable value (or download as JSON if large) |
+| vvar del &lt;name&gt; | Delete a server variable |
+| vvar clear | Delete ALL server variables |
+| vvardex | List all variables with pagination |
+
+**Note:** Variables can store numbers, text, lists, or JSON objects.
 
 ### Module Commands
 
-| Command | What it does | Permission |
-|---------|--------------|------------|
-| `vmodule import` | Install module (attach file) | Admin |
-| `vmodule export <tag>` | Create module from tag | Admin |
-| `vmodule backup` | Backup all rules | Admin |
-| `vmodule restore` | Restore from backup | Admin |
+Import, export, and backup rule collections:
+
+| Command | What it does | 
+|---------|--------------|
+| vmodule import | Install module from attached JSON file | 
+| vmodule export &lt;tag&gt; | Create module containing all rules with tag |
+| vmodule backup | Create full backup of all server rules |
+| vmodule restore | Restore rules from backup file |
 
 ### Help
 
+Get interactive help within Discord:
+
 | Command | What it does |
 |---------|--------------|
-| `vhelp` | Interactive help menu |
+| vhelp | Shows interactive dropdown menu with categorized help |
 
 ---
 
-## 💡 Examples
+## Examples
+
+Real-world automation examples you can use and modify.
 
 ### Auto-Moderation
 
-**Delete spam:**
+**Delete spam (repeated characters):**
 ```
 vrule add if message.content matches /(.)\1{10,}/ then message.delete; member.timeout 5 priority 100 tags [automod]
 ```
+Detects when someone types the same character 10+ times in a row.
 
 **Block links (except for admins):**
 ```
 vrule add if message.content matches /https?:\/\// and "Admin" not in member.role_names then message.delete; message.reply "No links allowed!" priority 90 tags [automod]
 ```
+Prevents non-admins from posting URLs.
 
 **Auto-ban on bad words:**
 ```
 vrule add if message.content matches /(badword1|badword2)/ then message.delete; member.ban priority 100 tags [automod]
 ```
+Replace `badword1|badword2` with your actual filtered words.
 
 ### Welcome System
 
@@ -360,11 +500,13 @@ vrule add if message.content matches /(badword1|badword2)/ then message.delete; 
 ```
 vrule add if event_type == "member_join" then channel.send_to 123456:"Welcome {member.mention} to the server!"; member.addrole "Member" priority 50 tags [welcome]
 ```
+Replace `123456` with your welcome channel ID.
 
 **Track total joins:**
 ```
 vrule add if event_type == "member_join" then var.add total_joins 1; channel.send "You're member #{var.total_joins}!" priority 50 tags [welcome]
 ```
+Counts and announces each new member.
 
 **Goodbye message:**
 ```
@@ -377,11 +519,13 @@ vrule add if event_type == "member_leave" then channel.send_to 123456:"{member.n
 ```
 vrule add if event_type == "message" and not member.bot then uvar.add xp 5 priority 5 tags [leveling]
 ```
+Award 5 XP for each message (excludes bots).
 
 **Level 10 role reward:**
 ```
 vrule add if uvar.xp >= 1000 and "Level 10" not in member.role_names then member.addrole "Level 10"; channel.send "🎉 {member.mention} reached Level 10!" priority 20 tags [leveling]
 ```
+Automatically gives role when user hits 1000 XP.
 
 **Check rank command:**
 ```
@@ -411,6 +555,7 @@ vrule add if message.content == "!stats" then channel.send "📊 Server: {guild.
 ```
 vrule add if event_type == "reaction_add" and emoji == "✅" then member.addrole "Verified" priority 30 tags [roles]
 ```
+User gets "Verified" role when they react with ✅.
 
 **Remove role when unreacting:**
 ```
@@ -435,6 +580,7 @@ vrule add if (time.dayofweek == "Saturday" or time.dayofweek == "Sunday") and ti
 ```
 vrule add if message.content matches /badword/ then message.delete; uvar.add warnings 1; member.dm "Warning {uvar.warnings}/3" priority 100 tags [moderation]
 ```
+Each violation increases user's warning count.
 
 **Auto-ban at 3 warnings:**
 ```
@@ -443,48 +589,54 @@ vrule add if uvar.warnings >= 3 then member.ban; channel.send "{member.name} was
 
 ---
 
-## ❓ FAQ
+## FAQ
 
 **Q: Can I have multiple conditions?**  
-A: Yes! Use `and`, `or`, and parentheses:
+A: Yes! Use `and`, `or`, and parentheses to create complex logic:
 ```
 if (A and B) or (C and D) then ...
 ```
 
 **Q: How do I mention a user in a message?**  
-A: Use `{member.mention}`:
+A: Use `{member.mention}` in your text:
 ```
 channel.send "Hello {member.mention}!"
 ```
 
 **Q: Can rules trigger other rules?**  
-A: Yes, if one rule's action creates an event that matches another rule's condition.
+A: Yes, if one rule's action creates an event that matches another rule's condition, the second rule will trigger.
 
 **Q: How do I find a channel ID?**  
-A: Enable Developer Mode in Discord → Right-click channel → Copy ID
+A: Enable Developer Mode in Discord (Settings → Advanced → Developer Mode), then right-click any channel and select "Copy ID".
 
 **Q: Why isn't my rule working?**  
-A: Check these:
-- Is it enabled? (`vrule toggle <id>`)
-- Check spelling: `vrule <id>`
-- Wait 1 second between tests (cooldown)
-- Check `vruledex` to see if it's listed
+A: Check these common issues:
+- Is it enabled? Use `vrule toggle <id>` to check
+- Verify syntax with `vrule <id>`
+- Wait 1 second between tests (rules have cooldowns)
+- Check `vruledex` to confirm rule exists
 
-**Q: Can I undo `vrule clear`?**  
+**Q: Can I undo vrule clear?**  
 A: Only if you ran `vmodule backup` first. Always backup before clearing!
 
 **Q: How many rules can I have?**  
 A: Maximum 100 rules per server.
 
+**Q: Do variables persist after bot restart?**  
+A: Yes! Server variables (var) and user variables (uvar) are saved to the database and persist permanently. Only temp variables are cleared.
+
+**Q: Can I use math in conditions?**  
+A: Yes! Example: `if var.points + 10 > 100 then ...`
+
 ---
 
-## 🆘 Need Help?
+## Need Help?
 
 - Run `vhelp` for the interactive help menu
-- Check your rule with `vrule <id>`
-- List all rules with `vruledex`
-- Test conditions one at a time
-- Make backups with `vmodule backup`
+- Check your rule with `vrule <id>` to see exact syntax
+- List all rules with `vruledex` to find IDs
+- Test conditions one at a time to isolate issues
+- Always make backups with `vmodule backup` before major changes
 
 ---
 
