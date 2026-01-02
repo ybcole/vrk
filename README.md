@@ -169,14 +169,6 @@ Schedule rules based on current time.
 | time.minute | Current minute (0-59) |
 | time.dayofweek | Day name (Monday, Tuesday, etc.) |
 
-### Event Info
-
-Determine what type of event triggered the rule.
-
-| Variable | Description |
-| --- | --- |
-| event_type | Event name (`message`, `member_join`, `reaction_add`, etc.) |
-
 ### Variables
 
 Reference stored data.
@@ -189,6 +181,64 @@ Reference stored data.
 
 
 ---
+
+## Events
+
+Events are discrete actions or changes that occur within a Discord server. They represent specific triggers that your bot can respond to. Each event provides contextual information about the objects involved. Use the `event_type` variable in your conditions to target specific triggers.
+
+### Message Events
+
+Triggered by activity in text channels. Provides the message content, author info, and channel details so rules can respond to messages or edits, or track deletions.
+
+| Event          | Trigger                     | Context Variables                                                                     |
+| -------------- | --------------------------- | ------------------------------------------------------------------------------------- |
+| message        | When a user sends a message | {message.content}, {message.id}, {message.author.bot}, {member.name}, {channel.topic} |
+| message_delete | When a message is deleted   | {message.content} (if cached), {message.id}, {message.created_at}, {channel.name}     |
+| message_edit   | When a message is edited    | {message.content} (new text), {message.id}, {message.jump_url}, {member.name}         |
+
+### Member Events
+
+Covers users joining, leaving, or having their roles and nicknames updated. Provides access to member details, roles changed, and server membership info.
+
+| Event         | Trigger                        | Context Variables                                                                       |
+| ------------- | ------------------------------ | --------------------------------------------------------------------------------------- |
+| member_join   | When someone joins the server  | {member.name}, {member.id}, {member.created_at}, {guild.member_count}, {guild.owner_id} |
+| member_leave  | When someone leaves the server | {member.name}, {member.id}, {member.joined_at}, {guild.member_count}                    |
+| member_update | When roles or nickname change  | {nick_changed}, {old_nick}, {new_nick}, {added_roles}, {removed_roles}, {member.roles}  |
+| member_ban    | When a user is banned          | {member.name}, {member.id}, {member.discriminator}                                      |
+| member_unban  | When a user is unbanned        | {member.name}, {member.id}                                                              |
+
+### Voice Events
+
+Tracks user activity in voice channels, including joining, leaving, or moving. Context includes the user, channel, and mute status.
+
+| Event        | Trigger                           | Context Variables                                                                           |
+| ------------ | --------------------------------- | ------------------------------------------------------------------------------------------- |
+| voice_update | When a user’s voice state changes | {voice.joined}, {voice.left}, {voice.moved}, {voice.channel_name}, {member.voice.self_mute} |
+
+### Reaction Events
+
+Triggered when members add or remove reactions. Provides the emoji, the message reacted to, and relevant member information.
+
+| Event           | Trigger                    | Context Variables                                                         |
+| --------------- | -------------------------- | ------------------------------------------------------------------------- |
+| reaction_add    | When a reaction is added   | {emoji}, {message.id}, {message.content}, {member.name}, {reaction.count} |
+| reaction_remove | When a reaction is removed | {emoji}, {message.id}, {message.channel.id}, {member.name}                |
+
+### Server/Guild Events
+
+Covers changes to channels or server settings. Context includes channel or server details so rules can respond to structural updates.
+
+| Event          | Trigger                          | Context Variables                                                                                               |
+| -------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| channel_create | When a new channel is created    | {channel.name}, {channel.id}, {channel.category.name}, {guild.name}                                             |
+| channel_delete | When a channel is deleted        | {channel.name}, {channel.id}, {channel.position}                                                                |
+| guild_update   | When server settings are changed | {name_changed}, {icon_changed}, {old_name}, {new_name}, {guild.description}, {guild.premium_subscription_count} |
+
+**Note**: For advanced and sophisticated rules, `vrk` supports accessing properties defined in the Discord library. Use these links to find available attributes for your rules: [message](https://www.google.com/search?q=https://discordpy.readthedocs.io/en/stable/api.html%23discord.Message), [member](https://www.google.com/search?q=https://discordpy.readthedocs.io/en/stable/api.html%23discord.Member), [guild](https://www.google.com/search?q=https://discordpy.readthedocs.io/en/stable/api.html%23discord.Guild), [channel](https://www.google.com/search?q=https://discordpy.readthedocs.io/en/stable/api.html%23discord.TextChannel), [reaction](https://www.google.com/search?q=https://discordpy.readthedocs.io/en/stable/api.html%23discord.Reaction), [role](https://www.google.com/search?q=https://discordpy.readthedocs.io/en/stable/api.html%23discord.Role)
+  
+---
+
 
 ## Actions
 
@@ -630,6 +680,9 @@ A: Yes! Server variables (var) and user variables (uvar) are saved to the databa
 
 **Q: Can I use math in conditions?**  
 A: Yes! Example: `if var.points + 10 > 100 then ...`
+
+---
+Here is the formatted **References** section to place at the very bottom of your User Guide. I have added the actual hyperlinks so users can click them directly.
 
 ---
 
