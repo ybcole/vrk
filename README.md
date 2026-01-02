@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 Table of Contents
+## ≡ Table of Contents
 
 1. [Getting Started](#-getting-started)
 2. [Creating Rules](#-creating-rules)
