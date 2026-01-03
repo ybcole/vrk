@@ -220,9 +220,9 @@ Generate random numbers for games and variety.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| {random.1-6} | Random number in range | Generates 1-6 |
-| {random.1-100} | Random number 1 to 100 | Generates 1-100 |
-| {random.-10-10} | Can use negative ranges | Generates -10 to 10 |
+| {random.1,6} | Random number in range | Generates 1-6 |
+| {random.1,100} | Random number 1 to 100 | Generates 1-100 |
+| {random.-10,-10} | Can use negative ranges | Generates -10 to 10 |
 
 ### Variables
 
