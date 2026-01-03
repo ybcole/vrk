@@ -78,11 +78,11 @@ vrule add if <condition> then <action> priority <number> tags [tag1, tag2]
 ### Rule Limits
 
 - **Maximum rules per server:** 100
-- **Maximum condition length:** 2000 characters
-- **Maximum action length:** 2000 characters per action
-- **Maximum actions per rule:** 10
-- **Rule cooldown:** 1 second between triggers of the same rule
-- **Burst limit:** 5 rules can fire per second per server
+- **Maximum condition length:** 4000 characters
+- **Maximum action length:** 4000 characters per action
+- **Maximum actions per rule:** 50
+- **Rule cooldown:** 0.5 seconds between triggers of the same rule
+- **Burst limit:** 20 rules can fire per second per server
 
 ---
 
@@ -112,6 +112,7 @@ Special operators for working with text:
 | startswith | message.content startswith "!" | Text begins with specific characters |
 | endswith | member.name endswith "_bot" | Text ends with specific characters |
 | in | "Moderator" in member.role_names | Check if item exists in a list |
+| not in | "Banned" not in member.role_names | Check if item does NOT exist in a list |
 | matches | message.content matches /https?:\/\// | Regex pattern matching |
 
 **Regex Example:** The pattern `/https?:\/\//` matches URLs starting with http:// or https://
@@ -165,6 +166,8 @@ Access information about the user who triggered the event.
 | member.display_name | Server nickname or username | "CoolNick" |
 | member.created_at | Account creation timestamp | Discord timestamp object |
 | member.joined_at | When member joined server | Discord timestamp object |
+| member.age_days | Days since account creation | 365 |
+| member.joined_days | Days since joined this server | 120 |
 
 ### Message Info
 
@@ -210,8 +213,7 @@ Schedule rules based on current time.
 |----------|-------------|---------------|
 | time.hour | Current hour in 24-hour format (0-23) | 14 |
 | time.minute | Current minute (0-59) | 30 |
-| time.dayofweek | Day name | "Monday" |
-| time.date | Current date (YYYY-MM-DD) | "2024-01-15" |
+| time.day | Day name | "Monday" |
 | time.timestamp | Unix timestamp | 1705334400.0 |
 
 ### Random Values
@@ -222,7 +224,7 @@ Generate random numbers for games and variety.
 |----------|-------------|---------|
 | {random.1,6} | Random number in range | Generates 1-6 |
 | {random.1,100} | Random number 1 to 100 | Generates 1-100 |
-| {random.-10,-10} | Can use negative ranges | Generates -10 to 10 |
+| {random.-10,10} | Can use negative ranges | Generates -10 to 10 |
 
 ### Variables
 
@@ -279,7 +281,6 @@ Covers users joining, leaving, or having their roles and nicknames updated.
 |-------|---------|-------------------|
 | member_join | When someone joins the server | member.name, member.id, member.created_at, guild.member_count, guild.owner_id |
 | member_leave | When someone leaves the server | member.name, member.id, member.joined_at, guild.member_count |
-| member_update | When roles or nickname change | nick_changed, old_nick, new_nick, added_roles, removed_roles, member.roles |
 | member_ban | When a user is banned | member.name, member.id, member.discriminator |
 | member_unban | When a user is unbanned | member.name, member.id |
 
@@ -294,16 +295,19 @@ Tracks user activity in voice channels.
 
 | Event | Trigger | Context Variables |
 |-------|---------|-------------------|
-| voice_update | When a user's voice state changes | voice.joined, voice.left, voice.moved, voice.channel_name, member.voice.self_mute |
+| voice_update | When a user's voice state changes | voice.joined, voice.left, voice.moved, event.afk, event.muted, event.deafened |
 
 **Special voice booleans:**
-- `voice.joined` - True when user joins a voice channel
-- `voice.left` - True when user leaves a voice channel
-- `voice.moved` - True when user switches voice channels
+- `event.joined` - True when user joins a voice channel
+- `event.left` - True when user leaves a voice channel
+- `event.moved` - True when user switches voice channels
+- `event.afk` - True when user is in AFK channel
+- `event.muted` - True when user is muted (self or server)
+- `event.deafened` - True when user is deafened (self or server)
 
 **Example:**
 ```
-vrule add if event_type == "voice_update" and voice.joined then channel.send "{member.name} joined {voice.channel_name}" priority 10 tags []
+vrule add if event_type == "voice_update" and event.joined then channel.send "{member.name} joined voice!" priority 10 tags []
 ```
 
 ### Reaction Events
@@ -367,10 +371,17 @@ Embeds use Python dictionary syntax with these fields:
 - `image` - Image URL (string)
 - `thumbnail` - Small image URL (string)
 - `footer` - Footer text (string)
+- `url` - URL for the title to link to (string)
+- `fields` - List of field objects with `name`, `value`, and `inline` (list)
 
 **Embed Example:**
 ```
 channel.send_embed "{'title': 'Server Rules', 'description': '1. Be respectful\n2. No spam', 'color': 0x0099FF, 'footer': 'Updated 2024'}"
+```
+
+**Embed with Fields:**
+```
+channel.send_embed "{'title': 'Stats', 'fields': [{'name': 'Level', 'value': '10', 'inline': true}, {'name': 'XP', 'value': '1500', 'inline': true}]}"
 ```
 
 ### Member Actions
@@ -465,7 +476,7 @@ Store and manipulate persistent data. **Important:** To perform math operations,
 | uvar.set | uvar.set "key" value | uvar.set "xp" 100 | Set a user-specific variable |
 | uvar.del | uvar.del "key" | uvar.del "warnings" | Delete a specific user variable |
 | uvar.clear | uvar.clear | uvar.clear | **Hard Reset:** Wipes ALL variables for that user |
-| temp.set | temp.set "key" value | temp.set "roll" {random.1-6} | Set temporary variable (rule-scoped only) |
+| temp.set | temp.set "key" value | temp.set "roll" {random.1,6} | Set temporary variable (rule-scoped only) |
 
 **Math Operations:**
 
@@ -502,7 +513,7 @@ Server variables are shared across your entire Discord server. Anyone can trigge
 
 **Properties:**
 - **Scope:** Everyone in the server
-- **Persistence:** Permanent (saved to database)
+- **Persistence:** Permanent (saved to database every 2 minutes)
 - **Use case:** Server-wide counters, settings, shared data
 
 **Managing via Commands:**
@@ -534,7 +545,7 @@ User variables are unique to each user. Every user has their own separate copy o
 
 **Properties:**
 - **Scope:** Specific user only
-- **Persistence:** Per-user, per-server (saved to database)
+- **Persistence:** Per-user, per-server (saved to database every 2 minutes)
 - **Use case:** XP systems, currency, personal stats, achievements
 
 **Managing via Commands:**
@@ -542,9 +553,12 @@ User variables are unique to each user. Every user has their own separate copy o
 ```
 vuvardex              (View your own variables)
 vuvardex @Username    (View another user's variables)
+vuvar set @User "key" value   (Set a user variable)
+vuvar get @User "key"         (Get a user variable)
+vuvar del @User "key"         (Delete a user variable)
 ```
 
-**Note:** Server administrators can use `vvar clear` to delete ALL user data if needed.
+**Note:** Server administrators can use `vvar clear` to delete ALL data including user variables if needed.
 
 **Using in Rules:**
 
@@ -587,7 +601,7 @@ Temporary variables only exist while a rule is executing. They're perfect for st
 **Example:**
 
 ```
-vrule add if message.content == "!roll" then temp.set "dice" {random.1-6}; message.reply "You rolled: {temp.dice}" priority 10 tags [fun]
+vrule add if message.content == "!roll" then temp.set "dice" {random.1,6}; message.reply "You rolled: {temp.dice}" priority 10 tags [fun]
 ```
 
 **Use Cases:**
@@ -610,7 +624,7 @@ channel.send "Server record: {var.highest_score} points"
 **Dynamic Variables:**
 - `{member.mention}` - Creates @mention for the user
 - `{channel.mention}` - Creates #mention for the channel
-- `{random.1-100}` - Generates random number between 1-100
+- `{random.1,100}` - Generates random number between 1-100
 - `{time.hour}` - Current hour
 - `{var.name}` - Your custom server variable
 - `{uvar.name}` - User's variable value
@@ -621,8 +635,9 @@ channel.send "Server record: {var.highest_score} points"
 **Database Storage:**
 - All `var` and `uvar` data is stored in MySQL database
 - Data persists through bot restarts
-- Automatic backup every 5 minutes
+- Automatic backup every 2 minutes (only saves changed data)
 - Data saved on bot shutdown
+- Uses optimized "dirty flag" system to only save modified guilds
 
 **Data Structure:**
 ```json
@@ -815,10 +830,13 @@ Manage server-wide variables directly.
 | vvar set <name> <value> | Create or update a server variable |
 | vvar get <name> | Retrieve variable value (or download as JSON if large) |
 | vvar del <name> | Delete a server variable |
-| vvar clear | Delete ALL server variables |
-| vvardex [page] | List all variables with pagination |
+| vvar clear | Delete ALL server variables (including user variables) |
+| vvardex [page] | List all variables with pagination (10 per page) |
 | vuvardex | View your own user variables |
 | vuvardex @User | View another user's variables |
+| vuvar set @User <name> <value> | Set a user variable for specific user |
+| vuvar get @User <name> | Get a user variable for specific user |
+| vuvar del @User <name> | Delete a user variable for specific user |
 
 **Examples:**
 ```
@@ -830,6 +848,8 @@ vvardex
 vvardex 2
 vuvardex
 vuvardex @JohnDoe
+vuvar set @JohnDoe "xp" 100
+vuvar get @JohnDoe "coins"
 ```
 
 **Note:** Large variables (>1900 characters) are automatically sent as downloadable JSON files.
@@ -938,14 +958,14 @@ vrule add if uvar.xp >= 10000 and "Level 100" not in member.role_names then memb
 
 **Dice roll:**
 ```
-vrule add if message.content == "!roll" then temp.set "dice" {random.1-6}; message.reply "🎲 You rolled a {temp.dice}!" priority 10 tags [fun]
+vrule add if message.content == "!roll" then temp.set "dice" {random.1,6}; message.reply "🎲 You rolled a {temp.dice}!" priority 10 tags [fun]
 ```
 
 **Coin flip:**
 ```
-vrule add if message.content == "!flip" then temp.set "coin" {random.0-1}; message.reply "🪙 Result: heads" priority 10 tags [fun]
+vrule add if message.content == "!flip" then temp.set "coin" {random.0,1}; message.reply "🪙 Result: heads" priority 10 tags [fun]
 
-vrule add if message.content == "!flip" then temp.set "coin" {random.0-1}; message.reply "🪙 Result: tails" priority 9 tags [fun]
+vrule add if message.content == "!flip" then temp.set "coin" {random.0,1}; message.reply "🪙 Result: tails" priority 9 tags [fun]
 ```
 Note: Use two rules with different priorities to simulate 50/50 chance.
 
@@ -990,7 +1010,7 @@ vrule add if time.hour == 9 and time.minute == 0 then channel.send "☀️ Good 
 
 **Only on weekends:**
 ```
-vrule add if (time.dayofweek == "Saturday" or time.dayofweek == "Sunday") and time.hour == 12 then channel.send "🎉 Happy weekend!" priority 1 tags [scheduled]
+vrule add if (time.day == "Saturday" or time.day == "Sunday") and time.hour == 12 then channel.send "🎉 Happy weekend!" priority 1 tags [scheduled]
 ```
 
 **Daily reminder:**
@@ -1026,7 +1046,7 @@ vrule add if message.content startswith "!warn" and "Moderator" in member.role_n
 
 **Work command:**
 ```
-vrule add if message.content == "!work" then temp.set "earned" {random.10-50}; uvar.set "coins" {uvar.coins} + {temp.earned}; message.reply "💼 You worked and earned {temp.earned} coins! Total: {uvar.coins}" priority 10 tags [economy]
+vrule add if message.content == "!work" then temp.set "earned" {random.10,50}; uvar.set "coins" {uvar.coins} + {temp.earned}; message.reply "💼 You worked and earned {temp.earned} coins! Total: {uvar.coins}" priority 10 tags [economy]
 ```
 
 **Balance check:**
@@ -1043,19 +1063,24 @@ vrule add if message.content == "!buy vip" and uvar.coins >= 1000 then uvar.set 
 
 **Announce voice joins:**
 ```
-vrule add if event_type == "voice_update" and voice.joined then channel.send_to "123456:🎤 {member.name} joined {voice.channel_name}" priority 10 tags [voice]
+vrule add if event_type == "voice_update" and event.joined then channel.send_to "123456:🎤 {member.name} joined voice!" priority 10 tags [voice]
 ```
 
-**Track voice time:**
+**Track voice sessions:**
 ```
-vrule add if event_type == "voice_update" and voice.joined then uvar.set "voice_sessions" {uvar.voice_sessions} + 1 priority 10 tags [voice]
+vrule add if event_type == "voice_update" and event.joined then uvar.set "voice_sessions" {uvar.voice_sessions} + 1 priority 10 tags [voice]
+```
+
+**Notify when user goes AFK:**
+```
+vrule add if event_type == "voice_update" and event.afk then channel.send_to "123456:{member.name} is now AFK" priority 10 tags [voice]
 ```
 
 ### Anti-Raid Protection
 
 **Kick new accounts (less than 7 days old):**
 ```
-vrule add if event_type == "member_join" and member.created_at > time.timestamp - 604800 then member.kick; channel.send "🛡️ Blocked new account: {member.name}" priority 100 tags [security]
+vrule add if event_type == "member_join" and member.age_days < 7 then member.kick; channel.send "🛡️ Blocked new account: {member.name}" priority 100 tags [security]
 ```
 
 **Auto-ban raid bots:**
@@ -1098,7 +1123,7 @@ A:
 A: Check these common issues:
 - Is it enabled? Use `vrule toggle <id>` to check
 - Verify syntax with `vrule <id>` to see if it was parsed correctly
-- Wait 1 second between tests (rules have cooldowns)
+- Wait 0.5 seconds between tests (rules have cooldowns)
 - Check `vruledex` to confirm rule exists and priority is correct
 - Look at bot logs for error messages
 - Test conditions individually to isolate the problem
@@ -1111,7 +1136,7 @@ A: Only if you ran `vmodule backup` first. **Always backup before clearing!** Th
 A: Maximum 100 rules per server. This limit prevents performance issues.
 
 **Q: Do variables persist after bot restart?**  
-A: Yes! Server variables (`var`) and user variables (`uvar`) are saved to the database and persist permanently. The bot auto-saves every 5 minutes and on shutdown. Only `temp` variables are cleared after each rule execution.
+A: Yes! Server variables (`var`) and user variables (`uvar`) are saved to the database automatically every 2 minutes and on shutdown. Only `temp` variables are cleared after each rule execution.
 
 **Q: Can I use math in conditions?**  
 A: Yes! Example:
@@ -1126,8 +1151,8 @@ A: They execute in order of their rule ID (lower IDs first). Use different prior
 
 **Q: How do rate limits work?**  
 A: 
-- Each rule has a 1-second cooldown before it can trigger again
-- Maximum 5 rules can fire per second per server (burst limit)
+- Each rule has a 0.5-second cooldown before it can trigger again
+- Maximum 20 rules can fire per second per server (burst limit)
 - This prevents infinite loops and performance issues
 
 **Q: Can I export rules to use in another bot?**  
@@ -1179,7 +1204,7 @@ A: No, rules don't track creators. Use module metadata or external documentation
 **Q: How do I prevent infinite loops?**  
 A: 
 - Avoid rules that trigger themselves
-- Use the 1-second cooldown to your advantage
+- Use the 0.5-second cooldown to your advantage
 - Add conditions like `not member.bot` to exclude bot messages
 - Use specific event types instead of general conditions
 
@@ -1192,6 +1217,26 @@ A: Yes! Variables are substituted before the embed is created:
 channel.send_embed "{'title': 'Stats', 'description': '{member.name} has {uvar.xp} XP'}"
 ```
 
+**Q: How does the database save optimization work?**  
+A: vrk uses a "dirty flag" system that only saves guilds whose variables have changed. This happens automatically every 2 minutes and on shutdown, significantly reducing database load.
+
+**Q: What happens if the bot crashes before saving?**  
+A: The bot saves all data on shutdown, but if it crashes unexpectedly, you may lose up to 2 minutes of variable changes (since the last auto-save). Rules are saved immediately when modified.
+
+**Q: Can I use complex data types in variables?**  
+A: Yes! You can store:
+- Numbers: `vvar set "count" 42`
+- Strings: `vvar set "name" "Server"`
+- Lists: `vvar set "items" ["sword", "shield"]`
+- Dictionaries: `vvar set "config" {"enabled": true, "limit": 100}`
+
+**Q: How do I access nested data in variables?**  
+A: Use dot notation in your conditions and actions:
+```
+if var.config.enabled == true then ...
+channel.send "{var.config.limit}"
+```
+
 ---
 
-**vrk Automation Engine** - Built for powerful, flexible Discord server automation.
+**vrk Automation Engine** - Built for powerful, flexible Discord server automation with optimized performance and persistent storage.
