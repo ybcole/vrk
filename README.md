@@ -1,6 +1,4 @@
 # vrk
-## Code you
-
 **vrk** is a high-performance Discord-Native Runtime and Embedded DSL IDE that lets you code your own server directly within your server. Its architecture is built with a fully integrated interpreter, allowing for the definition, compilation, and execution of arbitrary logic pipelines at runtime, granting you granular control over the Discord data model via deep object introspection.
 
 ---
