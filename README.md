@@ -85,7 +85,7 @@ endif
 | endif | Yes | Closes the if block |
 | priority | No | Execution order (higher = first, default: 0) |
 
-### Hidden Wrapper Mode
+### Hidden Wrapper
 
 When your condition is simply `True`, vrk automatically hides the `if/then/endif` wrapper in the editor view:
 
@@ -164,17 +164,6 @@ Opens a line-by-line editor where you can:
 - Delete lines: `3-` (delete line 3)
 - Save changes: `save`
 - Cancel editing: `exit`
-
-### Script Limits
-
-- **Max scripts per server:** 100
-- **Max condition length:** 4000 characters
-- **Max action length:** 4000 characters per action
-- **Max actions per script:** 50
-- **Cooldown:** 0.5 seconds between triggers
-- **Burst limit:** 20 scripts per second per server
-
-> **Note:** These limits are defined in the code but not currently enforced. Future versions may add validation.
 
 ---
 
