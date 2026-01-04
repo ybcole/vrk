@@ -980,6 +980,3 @@ if event_type == "message" and member.is_on_mobile then
     temp mobile_msg_count += 1;
 endif
 ```
-A: Each script has a 0.5-second cooldown. Avoid creating circular trigger chains.
-
-**Q:
