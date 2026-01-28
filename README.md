@@ -123,11 +123,16 @@ endif
 
 ### Comments
 
-Use `//` for single-line comments:
+Use `//` for single-line comments. Comments are preserved in the editor and can be used to document your code:
 
 ```lua
 // This is a comment
 var count = 0; // Initialize counter
+
+// Check for spam
+if message.length > 500 then
+    message.delete;
+endif
 ```
 
 ---
@@ -223,6 +228,7 @@ endif
 |--------|--------|---------|
 | channel.send | channel.send "text" | channel.send "Hello!" |
 | channel.send_to | channel.send_to "id:text" | channel.send_to "123456:Alert!" |
+| channel.send_embed | channel.send_embed {...} | channel.send_embed {title: Alert, desc: Info} |
 | channel.send_embed_to | channel.send_embed_to id:{...} | channel.send_embed_to 123:{title: Alert, desc: Important!}" |
 | message.reply | message.reply "text" | message.reply "Got it!" |
 | message.delete | message.delete | message.delete |
@@ -235,7 +241,17 @@ endif
 | Action | Syntax | Example |
 |--------|--------|---------|
 | webhook.send | webhook.send url "text" | webhook.send https://... "Log message" |
-| webhook.send_embed | webhook.send_embed url {...} | webhook.send_embed https://... title: Alert |
+| webhook.send | webhook.send url {...} | webhook.send https://... {content: Message, username: Bot} |
+| webhook.send_embed | webhook.send_embed url {...} | webhook.send_embed https://... {title: Alert} |
+
+**Webhook with custom username/avatar:**
+```lua
+webhook.send https://discord.com/api/webhooks/... {
+    content: Message here,
+    username: Custom Bot Name,
+    avatar: https://example.com/avatar.png
+}
+```
 
 ### Embed Format 
 
@@ -361,6 +377,12 @@ var enabled = true;  // Boolean support
 - **Strings:** `var name = "Player"`
 - **Booleans:** `var active = true` or `var active = false`
 
+vrk automatically detects and converts data types:
+- `"true"` or `"false"` → Boolean
+- `"3.14"` → Float
+- `"42"` → Integer
+- Everything else → String
+
 **Math operations:**
 ```lua
 var count += 1;         // Add
@@ -368,6 +390,12 @@ uvar health -= 10;      // Subtract
 var bonus *= 2;         // Multiply
 var average /= 2;       // Divide
 var remainder %= 3;     // Modulo
+```
+
+**Math with expressions:**
+```lua
+var count = {var.old} + 10;
+var total = {uvar.score} * 2;
 ```
 
 **Smart Integer Conversion:**
@@ -410,8 +438,8 @@ channel.send "Rolled: {temp.dice}";
 | Property | Returns | Description |
 |----------|---------|-------------|
 | message.content | String | Message text |
-| message.author | Member | Message author |
-| message.channel | Channel | Where message was sent |
+| message.author | Member | Message author object |
+| message.channel | Channel | Channel object where message was sent |
 | message.guild | Guild | Server object |
 | message.id | Integer | Message ID |
 | message.created_at | Datetime | When message was created |
@@ -511,7 +539,7 @@ endif
 |----------|---------|-------------|
 | guild.name | String | Server name |
 | guild.id | Integer | Server ID |
-| guild.owner | Member | Server owner |
+| guild.owner | Member | Server owner object |
 | guild.owner_name | String | Owner username |
 | guild.owner_id | Integer | Owner user ID |
 | guild.member_count | Integer | Total members |
@@ -522,9 +550,9 @@ endif
 | guild.icon | String | Server icon URL |
 | guild.boost_count | Integer | Number of boosts |
 | guild.boost_tier | Integer | Boost tier (0-3) |
+| guild.premium_tier | Integer | Boost tier (0-3) |
 | guild.role_count | Integer | Number of roles |
 | guild.channel_count | Integer | Number of channels |
-| guild.premium_tier | Integer | Nitro boost level |
 
 **Example:**
 ```lua
@@ -610,13 +638,24 @@ channel.send "You rolled: {temp.dice}";
 |-------|---------|---------|
 | voice_update | Voice state changes | member, voice, event.joined/left/moved |
 
-**Voice booleans:**
+**Voice event booleans:**
 - `event.joined` - True when joining voice
 - `event.left` - True when leaving voice
 - `event.moved` - True when switching channels
-- `event.afk` - True in AFK channel
-- `event.muted` - True when muted
-- `event.deafened` - True when deafened
+- `event.afk` - True when in AFK channel
+- `event.muted` - True when muted (self or server)
+- `event.deafened` - True when deafened (self or server)
+
+**Example:**
+```lua
+if event.joined then
+    channel.send "{member.name} joined {voice.name}!";
+endif
+
+if event.muted and event.deafened then
+    channel.send "{member.name} is fully muted and deafened.";
+endif
+```
 
 ### Reaction Events
 
@@ -716,6 +755,7 @@ member.addrole "Member";
 | `vuvar set @user <key> <value>` | Set user variable |
 | `vuvar get @user <key>` | Get user variable |
 | `vuvar del @user <key>` | Delete user variable |
+| `vuvar clear` | Delete ALL user variables for server |
 
 ### Debug Commands
 
@@ -728,7 +768,10 @@ member.addrole "Member";
 vprint (member.name)
 vprint (var.count + 10)
 vprint ({uvar.xp})
+vprint (time.hour)
 ```
+
+The `vprint` command evaluates expressions and resolves variables, making it perfect for debugging scripts and testing conditions.
 
 ### Import/Export Commands
 
@@ -773,14 +816,18 @@ Then attach a `.json` file. The bot will:
 vbackup
 ```
 
-Downloads ALL scripts as JSON.
+Downloads ALL scripts as JSON. This creates a complete snapshot of your server's automation system.
 
 **Restore:**
 ```
 vrestore
 ```
 
-Attach backup file to restore all scripts.
+Attach backup file to restore all scripts. The restore process:
+- Validates all script structures
+- Assigns unique IDs to avoid conflicts
+- Preserves script priorities and settings
+- Maintains backward compatibility
 
 ---
 
@@ -965,5 +1012,43 @@ endif
 ```lua
 if event_type == "message" and member.is_on_mobile then
     temp mobile_msg_count += 1;
+endif
+```
+
+### Advanced Nested Logic
+
+**Multi-tier moderation:**
+```lua
+if message.content matches badword then
+    if uvar.warnings >= 2 then
+        member.timeout 60;
+        channel.send "{member.mention} timed out for repeated violations.";
+    else
+        if uvar.warnings == 1 then
+            message.delete;
+            member.dm "⚠️ Final warning! Next violation = timeout.";
+            uvar warnings += 1;
+        else
+            message.delete;
+            member.dm "⚠️ First warning. Please follow server rules.";
+            uvar warnings = 1;
+        endif
+    endif
+endif
+```
+
+**Time-based role assignment:**
+```lua
+if event_type == "member_join" then
+    if time.hour >= 0 and time.hour < 6 then
+        member.addrole "Night Owl";
+        channel.send "🦉 {member.mention} joined during night hours!";
+    else
+        if time.hour >= 6 and time.hour < 12 then
+            member.addrole "Early Bird";
+        else
+            member.addrole "Member";
+        endif
+    endif
 endif
 ```
